@@ -6,7 +6,7 @@ Games::NES::ROM - View information about an NES game from a ROM file
 
 =head1 SYNOPSIS
 
-	use Games::NES::ROM;
+    use Games::NES::ROM;
     
     # Read in the ROM
     my $rom = Games::NES::ROM->new( 'file.nes' );
@@ -44,17 +44,17 @@ ROM file is layed out as follows:
 
 To install this module via Module::Build:
 
-	perl Build.PL
-	./Build         # or `perl Build`
-	./Build test    # or `perl Build test`
-	./Build install # or `perl Build install`
+    perl Build.PL
+    ./Build         # or `perl Build`
+    ./Build test    # or `perl Build test`
+    ./Build install # or `perl Build install`
 
 To install this module via ExtUtils::MakeMaker:
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+    perl Makefile.PL
+    make
+    make test
+    make install
 
 =cut
 
@@ -89,15 +89,15 @@ argument may be passed to immediately load the data.
 =cut
 
 sub new {
-	my $class = shift;
-	my $file  = shift;
-	my $self  = {};
+    my $class = shift;
+    my $file  = shift;
+    my $self  = {};
 
-	bless $self, $class;
+    bless $self, $class;
 
-	$self->load( $file ) if $file;
+    $self->load( $file ) if $file;
 
-	return $self;
+    return $self;
 }
 
 =head2 load( $file )
@@ -107,74 +107,74 @@ Reads the ROM structure into memory.
 =cut
 
 sub load {
-	my $self = shift;
-	my $file = shift;
+    my $self = shift;
+    my $file = shift;
 
     my $rom = FileHandle->new( $file, '<' );
-	binmode( $rom );
+    binmode( $rom );
 
-	my $header;
-	$rom->read( $header, HEADER_SIZE );
+    my $header;
+    $rom->read( $header, HEADER_SIZE );
 
-	die 'Not an NES rom' unless $header =~ /^NES/;
+    die 'Not an NES rom' unless $header =~ /^NES/;
 
-	my @values = unpack( $header_template, $header );
+    my @values = unpack( $header_template, $header );
 
-	for( 0..2 ) {
-		$self->set( $header_fields[ $_ ] => $values[ $_ ] );
-	}
+    for( 0..2 ) {
+        $self->set( $header_fields[ $_ ] => $values[ $_ ] );
+    }
 
-	$self->horizontal_mirroring( $values[ 3 ] & 1 ^ 1 );
-	$self->vertical_mirroring( $values[ 3 ] & 1 );
-	$self->SRAM( $values[ 3 ] & 2 );
-	$self->has_trainer( $values[ 3 ] & 4 );
-	$self->VRAM( $values[ 3 ] & 8 );
+    $self->horizontal_mirroring( $values[ 3 ] & 1 ^ 1 );
+    $self->vertical_mirroring( $values[ 3 ] & 1 );
+    $self->SRAM( $values[ 3 ] & 2 );
+    $self->has_trainer( $values[ 3 ] & 4 );
+    $self->VRAM( $values[ 3 ] & 8 );
 
-	my $prg_count = $self->PRG_count;
-	my $chr_count = $self->CHR_count;
+    my $prg_count = $self->PRG_count;
+    my $chr_count = $self->CHR_count;
 
-	my $mapper = ( $values[ 3 ] & 240 ) >> 4;
-	$mapper   |= ( $values[ 4 ] & 240 );
+    my $mapper = ( $values[ 3 ] & 240 ) >> 4;
+    $mapper   |= ( $values[ 4 ] & 240 );
 
-	if( $mapper != 0 and ( $prg_count == 2 or $prg_count == 1 ) and $chr_count == 1 ) {
-		$mapper = 0;
-	}
+    if( $mapper != 0 and ( $prg_count == 2 or $prg_count == 1 ) and $chr_count == 1 ) {
+        $mapper = 0;
+    }
 
-	$self->mapper( $mapper );
+    $self->mapper( $mapper );
 
     if( $self->has_trainer ) {
-    	my $trainer;
-	    $rom->read( $trainer, TRAINER_SIZE );
+        my $trainer;
+        $rom->read( $trainer, TRAINER_SIZE );
         $self->trainer( $trainer );
     }
 
-	my @prg_banks = map {
-		my $data;
-		$rom->read( $data, PRG_BANK_SIZE );
-		[ unpack( 'C*', $data ) ];
-	} 1..$prg_count;
+    my @prg_banks = map {
+        my $data;
+        $rom->read( $data, PRG_BANK_SIZE );
+        [ unpack( 'C*', $data ) ];
+    } 1..$prg_count;
 
-	my @chr_banks = map {
-		my $data;
-		$rom->read( $data, CHR_BANK_SIZE );
-		[ unpack( 'C*', $data ) ];
-	} 1..$chr_count;
+    my @chr_banks = map {
+        my $data;
+        $rom->read( $data, CHR_BANK_SIZE );
+        [ unpack( 'C*', $data ) ];
+    } 1..$chr_count;
 
-	$self->PRG_banks( \@prg_banks );
-	$self->CHR_banks( \@chr_banks );
+    $self->PRG_banks( \@prg_banks );
+    $self->CHR_banks( \@chr_banks );
 
     my $title;
     if($rom->read( $title, TITLE_SIZE ) == 128 ) {
         $self->title( $title );
     }
 
-	$rom->seek( HEADER_SIZE, 0 );
+    $rom->seek( HEADER_SIZE, 0 );
 
-	my $ctx = Digest::CRC->new( type=> 'crc32' );
-	$ctx->addfile( $rom );
-	$self->CRC( $ctx->hexdigest );
+    my $ctx = Digest::CRC->new( type=> 'crc32' );
+    $ctx->addfile( $rom );
+    $self->CRC( $ctx->hexdigest );
 
-	$rom->close;
+    $rom->close;
 }
 
 =head1 ACCESSORS
