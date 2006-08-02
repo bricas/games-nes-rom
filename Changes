@@ -1,6 +1,6 @@
 Revision history for Perl extension Games::NES::ROM
 
-0.02  Tue Aug 01 2006
+0.02  Wed Aug 02 2006
     - store raw chunks for CHR and PRG banks
     - added sprite() method
 
