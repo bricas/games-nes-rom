@@ -24,21 +24,21 @@ Games::NES::ROM - View information about an NES game from a ROM file
 This module loads the details of an NES rom file. An NES
 ROM file is layed out as follows:
 
-    +-----------+--------------+---------+---------+ Header
-    | NES\0x01a |[PC] [CC] X X | X X X X | X X X X | 16 Bytes
-    +-----------+--------------+---------+---------+
-    |                                              |
-    |         PRG Banks (PC * 16384 Bytes)         |
-    |                                              |
-    +----------------------------------------------+
-    |                                              |
-    |         CHR Banks (CC * 8192 Bytes)          |
-    |                                              |
-    +----------------------------------------------+
-    |                                              |
-    |         Title (128 Bytes - Optional)         |
-    |                                              |
-    +----------------------------------------------+
+    +-----------+---------------+---------+---------+ Header
+    | NES\0x01a | [PC] [CC] X X | X X X X | X X X X | 16 Bytes
+    +-----------+---------------+---------+---------+
+    |                                               |
+    |          PRG Banks (PC * 16384 Bytes)         |
+    |                                               |
+    +-----------------------------------------------+
+    |                                               |
+    |          CHR Banks (CC * 8192 Bytes)          |
+    |                                               |
+    +-----------------------------------------------+
+    |                                               |
+    |          Title (128 Bytes - Optional)         |
+    |                                               |
+    +-----------------------------------------------+
 
 =head1 INSTALLATION
 
@@ -72,7 +72,7 @@ use constant CHR_BANK_SIZE => 8192;
 use FileHandle;
 use Digest::CRC;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my $header_template = 'A4 C*';
 my @header_fields   = qw( identifier PRG_count CHR_count mapper );
@@ -151,13 +151,13 @@ sub load {
     my @prg_banks = map {
         my $data;
         $rom->read( $data, PRG_BANK_SIZE );
-        [ unpack( 'C*', $data ) ];
+        $data;
     } 1..$prg_count;
 
     my @chr_banks = map {
         my $data;
         $rom->read( $data, CHR_BANK_SIZE );
-        [ unpack( 'C*', $data ) ];
+        $data;
     } 1..$chr_count;
 
     $self->PRG_banks( \@prg_banks );
@@ -175,6 +175,44 @@ sub load {
     $self->CRC( $ctx->hexdigest );
 
     $rom->close;
+}
+
+=head2 sprite( $chr_bank, $index )
+
+Returns the raw (composite) sprite in the specified 
+CHR bank at the specified array index.
+
+=cut
+
+sub sprite {
+    my $self   = shift;
+    my $chr    = shift;
+    my $offset = shift;
+
+    die 'invalud CHR bank' if $chr > $self->CHR_count - 1 or $chr < 0;
+    die 'invalud sprite index' if $offset > 512 or $offset < 0;
+    
+    my $bank      = $self->CHR_banks->[ $chr ];
+    my $start     = 16 * $offset;
+    my @channel_a = unpack( 'C*', substr( $bank, $start, 8 ) );
+    my @channel_b = unpack( 'C*', substr( $bank, $start + 8, 8 ) );
+
+    my $composite = '';
+
+    for my $i ( 0..7 ) {
+        for my $j ( reverse 0..7 ) {
+            $composite .= pack( 'C', $self->_combine_bits( $channel_a[ $i ], $channel_b[ $i ], $j ) );
+        }
+    }
+    
+    return $composite;
+}
+
+sub _combine_bits {
+    my $self = shift;
+    my( $chan_a, $chan_b, $offset ) = @_;
+
+    return ( ( $chan_a >> $offset ) & 1 ) | ( ( ( $chan_b >> $offset ) & 1 ) << 1 );
 }
 
 =head1 ACCESSORS
