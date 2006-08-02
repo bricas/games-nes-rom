@@ -72,7 +72,7 @@ use constant CHR_BANK_SIZE => 8192;
 use FileHandle;
 use Digest::CRC;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my $header_template = 'A4 C*';
 my @header_fields   = qw( identifier PRG_count CHR_count mapper );
