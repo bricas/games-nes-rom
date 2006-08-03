@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 use_ok( 'Games::NES::ROM' );
 
@@ -8,6 +8,19 @@ isa_ok( $rom, 'Games::NES::ROM' );
 my $sprite = $rom->sprite( 0, 0 );
 ok( $sprite );
 is( length( $sprite ), 64 );
+
+my $expected = [
+    0, 0, 0, 0, 0, 0, 1, 1,
+    0, 0, 0, 0, 1, 1, 1, 1,
+    0, 0, 0, 1, 1, 1, 1, 1,
+    0, 0, 0, 1, 1, 1, 1, 1,
+    0, 0, 0, 3, 3, 3, 2, 2,
+    0, 0, 3, 2, 2, 3, 2, 2,
+    0, 0, 3, 2, 2, 3, 3, 2,
+    0, 3, 3, 2, 2, 3, 3, 2
+];
+
+is( $sprite, join( '', pack( 'C*', @$expected ) ) );
 
 eval { $rom->sprite( -1, 0 ); };
 ok( $@ );
