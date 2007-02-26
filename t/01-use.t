@@ -1,5 +1,5 @@
 use Test::More tests => 1;
 
 BEGIN {
-	use_ok( 'Games::NES::ROM' );
+    use_ok( 'Games::NES::ROM' );
 }

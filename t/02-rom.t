@@ -3,7 +3,7 @@ use Test::More tests => 14;
 use strict;
 
 BEGIN {
-	use_ok( 'Games::NES::ROM' );
+    use_ok( 'Games::NES::ROM' );
 }
 
 my $rom = Games::NES::ROM->new;
