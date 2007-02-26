@@ -12,7 +12,7 @@ my $build = Module::Build->new(
         'Class::Accessor' => 0,
         'Digest::CRC'     => 0,
     },
-    build_requres      => {
+    build_requires     => {
         'Test::More' => 0,
     }
 );
