@@ -72,7 +72,7 @@ use constant CHR_BANK_SIZE => 8192;
 use FileHandle;
 use Digest::CRC;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 my $header_template = 'A4 C*';
 my @header_fields   = qw( identifier PRG_count CHR_count mapper );
@@ -111,6 +111,9 @@ sub load {
     my $file = shift;
 
     my $rom = FileHandle->new( $file, '<' );
+
+    die "Unable to open ${file}: $!" unless defined $rom;
+
     binmode( $rom );
 
     my $header;
@@ -261,11 +264,7 @@ The following accessors are available:
 
 =head1 AUTHOR
 
-=over 4 
-
-=item * Brian Cassidy E<lt>bricas@cpan.orgE<gt>
-
-=back
+Brian Cassidy E<lt>bricas@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

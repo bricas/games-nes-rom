@@ -1,5 +1,9 @@
 Revision history for Perl extension Games::NES::ROM
 
+0.05  Wed Aug 01 2007
+    - error handling on file open
+    - switch to module::install
+
 0.04  Mon Feb 26 2007
     - repackaged -- no functional changes
 

@@ -1,4 +1,4 @@
-use Test::More tests => 14;
+use Test::More tests => 16;
 
 use strict;
 
@@ -11,6 +11,11 @@ my $rom = Games::NES::ROM->new;
 eval { $rom->load( 't/roms/notarom.nes' ); };
 ok( $@ );
 like( $@, qr/Not an NES rom/ );
+
+
+eval { $rom->load( 't/roms/dne.nes' ); };
+ok( $@ );
+like( $@, qr/Unable to open/ );
 
 $rom->load( 't/roms/test.nes' );
 
