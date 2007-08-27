@@ -24,22 +24,6 @@ Games::NES::ROM - View information about an NES game from a ROM file
 This module loads the details of an NES rom file. An NES
 ROM file is layed out as follows:
 
-    +-----------+---------------+---------+---------+ Header
-    | NES\0x01a | [PC] [CC] X X | X X X X | X X X X | 16 Bytes
-    +-----------+---------------+---------+---------+
-    |                                               |
-    |          PRG Banks (PC * 16384 Bytes)         |
-    |                                               |
-    +-----------------------------------------------+
-    |                                               |
-    |          CHR Banks (CC * 8192 Bytes)          |
-    |                                               |
-    +-----------------------------------------------+
-    |                                               |
-    |          Title (128 Bytes - Optional)         |
-    |                                               |
-    +-----------------------------------------------+
-
 =head1 INSTALLATION
 
     perl Makefile.PL
@@ -54,21 +38,17 @@ use base qw( Class::Accessor::Fast );
 use strict;
 use warnings;
 
-use constant HEADER_SIZE   => 16;
-use constant TITLE_SIZE    => 128;
-use constant TRAINER_SIZE  => 512;
-use constant PRG_BANK_SIZE => 16384;
-use constant CHR_BANK_SIZE => 8192;
-
 use FileHandle;
-use Digest::CRC;
 
-our $VERSION = '0.05';
+# perhaps these should be loaded with Module::Pluggable?
+use Games::NES::ROM::Format::INES;
+use Games::NES::ROM::Format::UNIF;
 
-my $header_template = 'A4 C*';
-my @header_fields   = qw( identifier PRG_count CHR_count mapper );
+our $VERSION = '0.06';
 
-__PACKAGE__->mk_accessors( @header_fields, qw( title has_trainer trainer horizontal_mirroring vertical_mirroring VRAM SRAM PRG_banks CHR_banks CRC ) );
+__PACKAGE__->mk_accessors( qw( identifier PRG_count CHR_count mapper title
+has_trainer trainer horizontal_mirroring vertical_mirroring VRAM SRAM
+PRG_banks CHR_banks CRC revision ) );
 
 =head1 METHODS
 
@@ -108,65 +88,20 @@ sub load {
     binmode( $rom );
 
     my $header;
-    $rom->read( $header, HEADER_SIZE );
+    $rom->read( $header, 4 );
+    $rom->seek( 0, 0 );
 
-    die 'Not an NES rom' unless $header =~ /^NES/;
-
-    my @values = unpack( $header_template, $header );
-
-    for( 0..2 ) {
-        $self->set( $header_fields[ $_ ] => $values[ $_ ] );
+    my $loaded;
+    for( qw( INES UNIF ) ) {
+        my $class = "Games\::NES\::ROM\::Format\::${_}";
+        if( $header eq $class->MAGIC ) {
+            bless $self, $class;
+            $loaded = $self->_load( $rom );
+            last;
+        }
     }
 
-    $self->horizontal_mirroring( $values[ 3 ] & 1 ^ 1 );
-    $self->vertical_mirroring( $values[ 3 ] & 1 );
-    $self->SRAM( $values[ 3 ] & 2 );
-    $self->has_trainer( $values[ 3 ] & 4 );
-    $self->VRAM( $values[ 3 ] & 8 );
-
-    my $prg_count = $self->PRG_count;
-    my $chr_count = $self->CHR_count;
-
-    my $mapper = ( $values[ 3 ] & 240 ) >> 4;
-    $mapper   |= ( $values[ 4 ] & 240 );
-
-    if( $mapper != 0 and ( $prg_count == 2 or $prg_count == 1 ) and $chr_count == 1 ) {
-        $mapper = 0;
-    }
-
-    $self->mapper( $mapper );
-
-    if( $self->has_trainer ) {
-        my $trainer;
-        $rom->read( $trainer, TRAINER_SIZE );
-        $self->trainer( $trainer );
-    }
-
-    my @prg_banks = map {
-        my $data;
-        $rom->read( $data, PRG_BANK_SIZE );
-        $data;
-    } 1..$prg_count;
-
-    my @chr_banks = map {
-        my $data;
-        $rom->read( $data, CHR_BANK_SIZE );
-        $data;
-    } 1..$chr_count;
-
-    $self->PRG_banks( \@prg_banks );
-    $self->CHR_banks( \@chr_banks );
-
-    my $title;
-    if($rom->read( $title, TITLE_SIZE ) == 128 ) {
-        $self->title( $title );
-    }
-
-    $rom->seek( HEADER_SIZE, 0 );
-
-    my $ctx = Digest::CRC->new( type=> 'crc32' );
-    $ctx->addfile( $rom );
-    $self->CRC( $ctx->hexdigest );
+    die 'Not an NES rom' unless $loaded;
 
     $rom->close;
 }
@@ -215,7 +150,9 @@ The following accessors are available:
 
 =over 4
 
-=item * identifier - sould be "NES\0x01a"
+=item * identifier - sould be "NES\0x01a" for iNES and "UNIF" for UNIF
+
+=item * revision - used by UNIF
 
 =item * PRG_count - number of PRG banks
 
@@ -249,7 +186,9 @@ The following accessors are available:
 
 =over 4
 
-=item * http://www.sadistech.com/nesromtool/romdoc.html
+=item * Games::NES::ROM::Format::INES
+
+=item * Games::NES::ROM::Format::UNIF
 
 =back
 

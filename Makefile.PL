@@ -5,6 +5,7 @@ all_from 'lib/Games/NES/ROM.pm';
 
 requires 'Class::Accessor::Fast';
 requires 'Digest::CRC';
+requires 'MIME::Base64';
 requires 'Test::More';
 
 auto_install;
