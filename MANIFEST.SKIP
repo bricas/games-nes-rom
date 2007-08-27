@@ -27,3 +27,6 @@
 
 # No tarballs!
 \.gz$
+
+# TODO
+\bTODO$

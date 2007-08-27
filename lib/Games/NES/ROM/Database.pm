@@ -1,7 +1,32 @@
 package Games::NES::ROM::Database;
 
+=head1 NAME
+
+Games::NES::ROM::Database - Known info about existing ROMs
+
+=head1 SYNOPSIS
+
+    use Games::NES::ROM::Database;
+    
+    my $db = Games::NES::ROM->new;
+    my $info = $db->get_info_by_crc( $crc );
+
+=head1 DESCRIPTION
+
+This database holds information about known game images. You can find out
+which mapper to use, how many PRG and CHR chunks it has, if it is an NTSC
+or PAL game, among other things.
+
+=head1 VERSION
+
+The database has been synchronized with version 1.37 of the Nestopia emulator.
+
+=cut
+
 use strict;
 use warnings;
+
+our $VERSION = '1.3700';
 
 use MIME::Base64 ();
 
@@ -22,6 +47,14 @@ use constant FLAGS => {
 my $unpack_record = 'H8 C C C C C C C C v';
 my @fields = qw( crc prg_size prg_skip chr_size chr_skip wrk_size mapper attribute input flags );
 
+=head1 METHODS
+
+=head2 new( )
+
+Creates a new instance of the database. Calls C<load_dabatase>.
+
+=cut
+
 sub new {
     my $self = bless {}, shift;
 
@@ -29,6 +62,13 @@ sub new {
 
     return $self;
 }
+
+=head2 load_database( )
+
+Reads the C<__DATA__> section of this module and extracts all of the database
+entries.
+
+=cut
 
 sub load_database {
     my $self = shift;
@@ -51,19 +91,62 @@ sub load_database {
     }
 }
 
+=head2 get_info_by_crc( $crc )
+
+Given a CRC hex string, it will return a hashref of info from the database
+or undef if it does not exist in the database.
+
+=cut
+
 sub get_info_by_crc {
     my( $self, $crc ) = @_;
     return $self->{ roms }->{ $crc };
 }
 
+=head2 entries( )
+
+Returns an array of all database entries.
+
+=cut
+
 sub entries {
     return values %{ shift->{ roms } };
 }
+
+=head2 has_trainer( \%info )
+
+Given an info hashref from the database, it will determine if the ROM has
+trainer data available.
+
+=cut
 
 sub has_trainer {
     my( $self, $info ) = @_;
     return $info->{ flags } & FLAGS->{ TRAINER } ? 1 : 0
 }
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * Games::NES::ROM
+
+=item * http://nestopia.sourceforge.net/
+
+=back
+
+=head1 AUTHOR
+
+Brian Cassidy E<lt>bricas@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2007 by Brian Cassidy
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
+
+=cut
 
 1;
 

@@ -21,8 +21,16 @@ Games::NES::ROM - View information about an NES game from a ROM file
 
 =head1 DESCRIPTION
 
-This module loads the details of an NES rom file. An NES
-ROM file is layed out as follows:
+This module loads the details of an NES rom file. It supports the following
+formats:
+
+=over 4
+
+=item * L<Universal NES Image File (UNIF)|Games::NES::ROM::Format::UNIF>
+
+=item * L<iNES|Games::NES::ROM::Format::INES>
+
+=back
 
 =head1 INSTALLATION
 
