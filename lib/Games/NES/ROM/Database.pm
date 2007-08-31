@@ -29,6 +29,7 @@ use warnings;
 our $VERSION = '1.3700';
 
 use MIME::Base64 ();
+use Games::NES::ROM;
 
 use constant RECORD_SIZE => 14;
 
@@ -45,7 +46,7 @@ use constant FLAGS => {
 };
 
 my $unpack_record = 'H8 C C C C C C C C v';
-my @fields = qw( crc prg_size prg_skip chr_size chr_skip wrk_size mapper attribute input flags );
+my @fields = qw( CRC PRG_count prg_skip CHR_count chr_skip wrk_size mapper attribute input flags );
 
 =head1 METHODS
 
@@ -84,9 +85,9 @@ sub load_database {
     while( $offset < $db_size ) {
         my %info;
         @info{ @fields } = unpack( $unpack_record, substr( $db, $offset, RECORD_SIZE ) );
-        $info{ crc } =~ s{(..)(..)(..)(..)}{$4$3$2$1};
+        $info{ CRC } =~ s{(..)(..)(..)(..)}{$4$3$2$1};
 
-        $self->{ roms }->{ $info{ crc } } = \%info;
+        $self->{ roms }->{ $info{ CRC } } = Games::NES::ROM->new( \%info );
         $offset += RECORD_SIZE;
     }
 }

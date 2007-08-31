@@ -54,9 +54,13 @@ use Games::NES::ROM::Format::UNIF;
 
 our $VERSION = '0.06';
 
-__PACKAGE__->mk_accessors( qw( identifier PRG_count CHR_count mapper title
-has_trainer trainer horizontal_mirroring vertical_mirroring VRAM SRAM
-PRG_banks CHR_banks CRC revision ) );
+__PACKAGE__->mk_accessors( qw(
+    title mapper TVCI mirroring controller comments dump_info trainer
+    VRAM SRAM PRG_banks CHR_banks PRG_count CHR_count has_trainer CRC
+) );
+
+my @tvci_lut = qw( Both PAL NTSC );
+my @mirroring_lut = qw( Horizontal Vertical Fourscreen Zero One Controller );
 
 =head1 METHODS
 
@@ -69,10 +73,8 @@ argument may be passed to immediately load the data.
 
 sub new {
     my $class = shift;
+    my $self  = $class->SUPER::new( ref $_[ 0 ] eq 'HASH' ? shift : {} );
     my $file  = shift;
-    my $self  = {};
-
-    bless $self, $class;
 
     $self->load( $file ) if $file;
 
@@ -152,33 +154,36 @@ sub _combine_bits {
     return ( ( $chan_a >> $offset ) & 1 ) | ( ( ( $chan_b >> $offset ) & 1 ) << 1 );
 }
 
+sub mapper_name {
+}
+
+sub TVCI_name {
+    return $tvci_lut[ $_[ 0 ]->TVCI ];
+}
+
+sub mirroring_name {
+}
+
+sub controller_name {
+}
+
 =head1 ACCESSORS
 
 The following accessors are available:
 
 =over 4
 
-=item * identifier - sould be "NES\0x01a" for iNES and "UNIF" for UNIF
-
 =item * revision - used by UNIF
-
-=item * PRG_count - number of PRG banks
-
-=item * CHR_count - number of CHR banks
 
 =item * PRG_banks - arrayref of PRG data
 
-=item * CHR_banks - array ref of CHR data
+=item * CHR_banks - arrayref of CHR data
 
 =item * mapper - the mapper number
 
-=item * has_trainer - is there trainer data?
-
 =item * trainer - the trianer data
 
-=item * horizontal_mirroring - does it use horizontal mirroring?
-
-=item * vertical_mirroring - does it use veritcal mirroring?
+=item * mirroring - what kind of mirroring is used?
 
 =item * VRAM - uses VRAM?
 

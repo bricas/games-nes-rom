@@ -17,6 +17,8 @@ my @header_fields = qw( identifier revision filler );
 
 my $chunk_header_template = 'A4 V';
 
+__PACKAGE__->mk_accessors( qw( identifier revision ) );
+
 =head1 NAME
 
 Games::NES::ROM::Format::INES - Loads data from a ROM in UNIF format
@@ -103,6 +105,26 @@ sub _parse_PRG_chunk {
     my $prg_banks = $self->PRG_banks || [];
     $prg_banks->[ $id ] = $data;
     $self->PRG_banks( $prg_banks );
+}
+
+sub _parse_READ_chunk {
+    my( $self, $data ) = @_;
+    $self->comments( unpack( 'A*', $data ) );
+}
+
+sub _parse_TVCI_chunk {
+    my( $self, $data ) = @_;
+    $self->TVCI( unpack( 'C', $data ) );
+}
+
+sub _parse_CTRL_chunk {
+    my( $self, $data ) = @_;
+    $self->controller( unpack( 'C', $data ) );
+}
+
+sub _parse_MIRR_chunk {
+    my( $self, $data ) = @_;
+    $self->mirroring( unpack( 'C', $data ) );
 }
 
 =head1 SEE ALSO

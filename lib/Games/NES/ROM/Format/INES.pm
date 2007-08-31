@@ -18,6 +18,8 @@ use constant CHR_BANK_SIZE => 8192;
 my $header_template = 'A4 C*';
 my @header_fields   = qw( identifier PRG_count CHR_count mapper );
 
+__PACKAGE__->mk_accessors( qw( identifier ) );
+
 =head1 NAME
 
 Games::NES::ROM::Format::INES - Loads data from a ROM in iNES format
