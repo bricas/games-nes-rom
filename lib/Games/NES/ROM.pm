@@ -48,7 +48,6 @@ use warnings;
 
 use FileHandle;
 
-# perhaps these should be loaded with Module::Pluggable?
 use Games::NES::ROM::Format::INES;
 use Games::NES::ROM::Format::UNIF;
 
