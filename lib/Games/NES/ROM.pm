@@ -1,5 +1,69 @@
 package Games::NES::ROM;
 
+use Moose;
+use Try::Tiny;
+use FileHandle;
+
+has 'filename' => ( is => 'rw' );
+
+has 'filehandle' => ( is => 'rw', isa => 'FileHandle', lazy_build => 1 );
+
+has 'id' => ( is => 'ro' );
+
+has 'title' => ( is => 'rw' );
+
+has 'prg_banks' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
+
+has 'chr_banks' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
+
+has 'has_sram' => ( is => 'rw', isa => 'Bool', default => 0 );
+
+has 'mirroring' => ( is => 'rw', isa => 'Int', default => 0 );
+
+has 'mapper' => ( is => 'rw' );
+
+sub _build_filehandle {
+    my $self = shift;
+    my $file = $self->filename;
+    my $fh   = FileHandle->new( $file, '<' );
+
+    die "Unable to open ${file}: $!" unless defined $fh;
+
+    binmode( $fh );
+    return $fh;
+}
+
+sub load {
+    my( $class, $file ) = @_;
+
+    for( qw( INES UNIF ) ) {
+        my $class = 'Games::NES::ROM::Format::' . $_;
+        Class::MOP::load_class( $class );
+
+        my $rom = try {
+            $class->new( filename => $file );
+        };
+
+        return $rom if $rom;
+    }
+
+    die "${file} is not an NES rom";
+}
+
+sub prg_count {
+    return scalar @{ shift->prg_banks };
+}
+
+sub chr_count {
+    return scalar @{ shift->chr_banks };
+}
+
+__PACKAGE__->meta->make_immutable;
+
+1;
+
+__END__
+
 =head1 NAME
 
 Games::NES::ROM - View information about an NES game from a ROM file

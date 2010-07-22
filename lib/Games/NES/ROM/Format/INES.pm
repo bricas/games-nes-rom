@@ -1,5 +1,65 @@
 package Games::NES::ROM::Format::INES;
 
+use Moose;
+
+extends 'Games::NES::ROM';
+
+has '+id' => ( default => "NES\x1a" );
+
+has 'trainer' => ( is => 'rw' );
+
+sub BUILD {
+    my $self = shift;
+    my $fh = $self->filehandle;
+
+    my $id;
+    $fh->read( $id, 4 );
+
+    die 'Not an iNES rom' if $id ne $self->id;
+
+    my $header;
+    $fh->read( $header, 12 );
+
+    my @header_vals = unpack( 'C*', $header );
+
+    $self->mirroring( $header_vals[ 3 ] & 1 );
+    if( $header_vals[ 3 ] & 8 ) {
+        $self->mirroring( 4 );
+    }
+    $self->has_sram( $header_vals[ 3 ] & 2 );
+
+    if( $header_vals[ 3 ] & 4 ) {
+        my $trainer;
+        $fh->read( $trainer, 512 );
+        $self->trainer( $trainer );
+    }
+
+    my $mapper = ( $header_vals[ 3 ] & 240 ) >> 4;
+    $mapper   |= ( $header_vals[ 4 ] & 240 );
+
+    if( $mapper != 0 and $header_vals[ 0 ] <= 2 and $header_vals[ 1 ] == 1 ) {
+        $mapper = 0;
+    }
+
+    $self->mapper( $mapper );
+
+    $fh->read( $self->prg_banks->[ scalar @{ $self->prg_banks } ], 16384 ) for 1..$header_vals[ 0 ];
+    $fh->read( $self->chr_banks->[ scalar @{ $self->chr_banks } ], 8192 ) for 1..$header_vals[ 1 ];
+
+    my $title;
+    if( $fh->read( $title, 128 ) == 128 ) {
+        $self->title( $title );
+    }
+
+    $self->clear_filehandle;
+    return $self;
+}
+
+__PACKAGE__->meta->make_immutable;
+
+1;
+
+__END__
 use strict;
 use warnings;
 
