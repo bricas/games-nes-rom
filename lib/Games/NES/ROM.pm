@@ -178,27 +178,42 @@ Returns the CRC checksum for the PRG and CHR data.
 Returns the raw (composite) sprite in the specified 
 CHR bank at the specified array index.
 
-=head1 ACCESSORS
+=head1 BASE ATTRIBUTES
 
-The following accessors are available:
+The following base attributes are available for all file formats:
 
 =over 4
 
-=item * mapper - the mapper number
+=item * filename - The filename from which data was loaded
 
-=item * trainer - the trianer data
+=item * id - A string found at the beginning of a file to identify the file format
 
-=item * mirroring - what kind of mirroring is used?
+=item * title - The game's title, if available 
 
-=item * VRAM - uses VRAM?
+=item * prg_banks - An arrayref of PRG bank data
 
-=item * SRAM - uses SRAM?
+=item * chr_banks - An arrayref of CHR bank data
 
-=item * CRC - CRC checksum
+=item * has_sram - Boolean value to determine if the ROM is battery backed
 
-=item * title - game title if available 
+=item * mapper - A value indicating what memory mapper to use with the ROM
+
+=item * mirroring - A value indicating what time of mirroring is used in the ROM
 
 =back
+
+=head2 NOTES
+
+=over 4
+
+=item * mapper - iNES uses integer IDs, UNIF uses string IDs
+
+=item * mirroring - An integer ID, using the UNIF list as a basis
+
+=back
+
+Each file format will have an extended set of attributes specific to its data
+structure. Please consult their documentation for more information.
 
 =head1 SEE ALSO
 
