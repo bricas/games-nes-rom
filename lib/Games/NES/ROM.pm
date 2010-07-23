@@ -4,6 +4,8 @@ use Moose;
 use Try::Tiny;
 use FileHandle;
 
+our $VERSION = '0.06';
+
 has 'filename' => ( is => 'rw' );
 
 has 'filehandle' => ( is => 'rw', isa => 'FileHandle', lazy_build => 1 );
@@ -33,6 +35,8 @@ sub _build_filehandle {
     return $fh;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 sub load {
     my( $class, $file ) = @_;
 
@@ -58,143 +62,25 @@ sub chr_count {
     return scalar @{ shift->chr_banks };
 }
 
-__PACKAGE__->meta->make_immutable;
-
-1;
-
-__END__
-
-=head1 NAME
-
-Games::NES::ROM - View information about an NES game from a ROM file
-
-=head1 SYNOPSIS
-
-    use Games::NES::ROM;
-    
-    # Read in the ROM
-    my $rom = Games::NES::ROM->new( 'file.nes' );
-
-    # Access the details
-    print 'PRG Banks: ', $rom->PRG_count, "\n";
-    print 'CHR Banks: ', $rom->CHR_count, "\n";
-    # etc...
-    
-    # View the CRC checksum
-    print 'CRC: ', $rom->CRC;
-
-=head1 DESCRIPTION
-
-This module loads the details of an NES rom file. It supports the following
-formats:
-
-=over 4
-
-=item * L<Universal NES Image File (UNIF)|Games::NES::ROM::Format::UNIF>
-
-=item * L<iNES|Games::NES::ROM::Format::INES>
-
-=back
-
-=head1 INSTALLATION
-
-    perl Makefile.PL
-    make
-    make test
-    make install
-
-=cut
-
-use base qw( Class::Accessor::Fast );
-
-use strict;
-use warnings;
-
-use FileHandle;
-
-use Games::NES::ROM::Format::INES;
-use Games::NES::ROM::Format::UNIF;
-
-our $VERSION = '0.06';
-
-__PACKAGE__->mk_accessors( qw(
-    title mapper TVCI mirroring controller comments dump_info trainer
-    VRAM SRAM PRG_banks CHR_banks PRG_count CHR_count has_trainer CRC
-) );
-
-my @tvci_lut = qw( Both PAL NTSC );
-my @mirroring_lut = qw( Horizontal Vertical Fourscreen Zero One Controller );
-
-=head1 METHODS
-
-=head2 new( [$filename] )
-
-Creates a new instance of the module. An optional filename
-argument may be passed to immediately load the data.
-
-=cut
-
-sub new {
-    my $class = shift;
-    my $self  = $class->SUPER::new( ref $_[ 0 ] eq 'HASH' ? shift : {} );
-    my $file  = shift;
-
-    $self->load( $file ) if $file;
-
-    return $self;
-}
-
-=head2 load( $file )
-
-Reads the ROM structure into memory.
-
-=cut
-
-sub load {
+sub sha1 {
     my $self = shift;
-    my $file = shift;
-
-    my $rom = FileHandle->new( $file, '<' );
-
-    die "Unable to open ${file}: $!" unless defined $rom;
-
-    binmode( $rom );
-
-    my $header;
-    $rom->read( $header, 4 );
-    $rom->seek( 0, 0 );
-
-    my $loaded;
-    for( qw( INES UNIF ) ) {
-        my $class = "Games\::NES\::ROM\::Format\::${_}";
-        if( $header eq $class->MAGIC ) {
-            bless $self, $class;
-            $loaded = $self->_load( $rom );
-            last;
-        }
-    }
-
-    die 'Not an NES rom' unless $loaded;
-
-    $rom->close;
+    require Digest::SHA1;
+    return Digest::SHA1::sha1_hex( @{ $self->prg_banks }, @{ $self->chr_banks } );
 }
 
-=head2 sprite( $chr_bank, $index )
-
-Returns the raw (composite) sprite in the specified 
-CHR bank at the specified array index.
-
-=cut
+sub crc {
+    my $self = shift;
+    require Digest::CRC;
+    return Digest::CRC::crc32_hex( join( '', @{ $self->prg_banks }, @{ $self->chr_banks } ) );
+}
 
 sub sprite {
-    my $self   = shift;
-    my $chr    = shift;
-    my $offset = shift;
+    my( $self, $chr, $offset ) = shift;
 
-    die 'invalid CHR bank' if $chr > $self->CHR_count - 1 or $chr < 0;
+    die 'invalid CHR bank' if $chr > $self->chr_count - 1 or $chr < 0;
     die 'invalid sprite index' if $offset > 512 or $offset < 0;
     
-    my $bank      = $self->CHR_banks->[ $chr ];
+    my $bank      = $self->chr_banks->[ $chr ];
     my $start     = 16 * $offset;
     my @channel_a = unpack( 'C*', substr( $bank, $start, 8 ) );
     my @channel_b = unpack( 'C*', substr( $bank, $start + 8, 8 ) );
@@ -217,30 +103,86 @@ sub _combine_bits {
     return ( ( $chan_a >> $offset ) & 1 ) | ( ( ( $chan_b >> $offset ) & 1 ) << 1 );
 }
 
-sub mapper_name {
-}
+1;
 
-sub TVCI_name {
-    return $tvci_lut[ $_[ 0 ]->TVCI ];
-}
+__END__
 
-sub mirroring_name {
-}
+=head1 NAME
 
-sub controller_name {
-}
+Games::NES::ROM - View information about an NES game from a ROM file
+
+=head1 SYNOPSIS
+
+    use Games::NES::ROM;
+    
+    # Read in the ROM without having to know its format
+    my $rom = Games::NES::ROM->load( 'file.nes' );
+
+    # Specifically read in an iNES file
+    $rom = Games::NES::ROM::INES->new( filename => 'file.nes' );
+
+    # Access the details
+    print 'PRG Banks: ', $rom->prg_count, "\n";
+    print 'CHR Banks: ', $rom->prg_count, "\n";
+    # etc...
+    
+    # View the SHA-1 & CRC checksums
+    print 'SHA1: ', $rom->sha1, "\n";
+    print ' CRC: ', $rom->crc, "\n";
+
+=head1 DESCRIPTION
+
+This module loads the details of an NES rom file. It is primarily meant to be
+used a base class for more specific file formats. Those formats include:
+
+=over 4
+
+=item * L<Universal NES Image File (UNIF)|Games::NES::ROM::Format::UNIF>
+
+=item * L<iNES|Games::NES::ROM::Format::INES>
+
+=back
+
+=head1 INSTALLATION
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+=head1 METHODS
+
+=head2 load( $filename )
+
+Attemps to read the ROM structure into memory using all available file
+formats until success.
+
+=head2 prg_count( )
+
+Returns the number of PRG banks for this ROM.
+
+=head2 chr_count( )
+
+Returns the number of CHR banks for this ROM.
+
+=head2 sha1()
+
+Returns the SHA-1 checksum for the PRG and CHR data.
+
+=head2 crc()
+
+Returns the CRC checksum for the PRG and CHR data.
+
+=head2 sprite( $chr_bank, $index )
+
+Returns the raw (composite) sprite in the specified 
+CHR bank at the specified array index.
 
 =head1 ACCESSORS
 
 The following accessors are available:
 
 =over 4
-
-=item * revision - used by UNIF
-
-=item * PRG_banks - arrayref of PRG data
-
-=item * CHR_banks - arrayref of CHR data
 
 =item * mapper - the mapper number
 
@@ -262,9 +204,9 @@ The following accessors are available:
 
 =over 4
 
-=item * Games::NES::ROM::Format::INES
+=item * L<Games::NES::ROM::Format::INES>
 
-=item * Games::NES::ROM::Format::UNIF
+=item * L<Games::NES::ROM::Format::UNIF>
 
 =back
 
@@ -274,11 +216,10 @@ Brian Cassidy E<lt>bricas@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2007 by Brian Cassidy
+Copyright 2007-2010 by Brian Cassidy
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
 
 =cut
 
-1;
