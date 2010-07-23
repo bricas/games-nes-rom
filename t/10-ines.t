@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 17;
 
 BEGIN {
     use_ok( 'Games::NES::ROM::Format::INES' );
@@ -31,11 +31,13 @@ BEGIN {
     isa_ok( $rom, 'Games::NES::ROM' );
 
     is( $rom->id,        'NES' . chr( 26 ), 'id()' );
+    is( $rom->filename,  't/roms/test.nes', 'filename()' );
     is( $rom->has_sram,  0,                 'has_sram()' );
     is( $rom->chr_count, 1,                 'chr_count()' );
     is( $rom->prg_count, 2,                 'prg_count()' );
     is( $rom->mapper,    0,                 'mapper()' );
     is( $rom->mirroring, 0,                 'mirroring()' );
+    ok( !defined $rom->title, 'title()' );
     ok( !defined $rom->trainer, 'trainer()' );
 
 SKIP: {
