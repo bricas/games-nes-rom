@@ -1,12 +1,12 @@
-use inc::Module::Install 0.65;
+use inc::Module::Install 0.99;
 
 name 'Games-NES-ROM';
 all_from 'lib/Games/NES/ROM.pm';
 
-requires 'Class::Accessor::Fast';
-requires 'Digest::CRC';
-requires 'MIME::Base64';
-requires 'Test::More';
+requires 'Moose';
+requires 'Try::Tiny';
+requires 'FileHandle';
 
-auto_install;
+test_requires 'Test::More';
+
 WriteAll;
