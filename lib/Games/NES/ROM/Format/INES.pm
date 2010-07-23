@@ -70,21 +70,46 @@ Games::NES::ROM::Format::INES - Loads data from a ROM in iNES format
 This module loads the details of an NES rom in iNES format. An iNES file is
 layed out as follows:
 
-    +-----------+---------------+---------+---------+ Header
-    | NES\0x01a | [PC] [CC] X X | X X X X | X X X X | 16 Bytes
-    +-----------+---------------+---------+---------+
-    |                                               |
-    |          PRG Banks (PC * 16384 Bytes)         |
-    |                                               |
-    +-----------------------------------------------+
-    |                                               |
-    |          CHR Banks (CC * 8192 Bytes)          |
-    |                                               |
-    +-----------------------------------------------+
-    |                                               |
-    |          Title (128 Bytes - Optional)         |
-    |                                               |
-    +-----------------------------------------------+
+    +-----------+-----------------+---------+---------+ Header
+    | NES\0x01a | [PC] [CC] F6 F7 | X X X X | X X X X | 16 Bytes
+    +-----------+-----------------+---------+---------+
+    |                                                 |
+    |           Trainer (512 Bytes; Optional)         |
+    |                                                 |
+    +-------------------------------------------------+
+    |                                                 |
+    |           PRG Banks (PC * 16384 Bytes)          |
+    |                                                 |
+    +-------------------------------------------------+
+    |                                                 |
+    |           CHR Banks (CC * 8192 Bytes)           |
+    |                                                 |
+    +-------------------------------------------------+
+    |                                                 |
+    |           Title (128 Bytes; Optional)           |
+    |                                                 |
+    +-------------------------------------------------+
+    
+    PC: PRG bank count
+    CC: CHR bank count
+    F6: Various flags (Byte 6)
+    F7: Various flags (Byte 7)
+
+=head1 METHODS
+
+=head2 BUILD( )
+
+A L<Moose> method which loads the ROM data from a file.
+
+=head1 ATTRIBUTES
+
+=over 4
+
+=item * id - iNES identifier: "NES\x1a"
+
+=item * trainer - Trainer data, if available
+
+=back
 
 =head1 SEE ALSO
 
@@ -92,7 +117,7 @@ layed out as follows:
 
 =item * Games::NES::ROM
 
-=item * http://www.sadistech.com/nesromtool/romdoc.html
+=item * http://wiki.nesdev.com/w/index.php/INES
 
 =back
 
