@@ -165,7 +165,7 @@ available:
 
 =item * Games::NES::ROM
 
-=item * http://www.parodius.com/~veilleux/UNIF_current.txt
+=item * http://www.viste-family.net/mateusz/nes/html/tech/unif_cur.txt
 
 =back
 
