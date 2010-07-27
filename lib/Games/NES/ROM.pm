@@ -75,7 +75,7 @@ sub crc {
 }
 
 sub sprite {
-    my( $self, $chr, $offset ) = shift;
+    my( $self, $chr, $offset ) = @_;
 
     die 'invalid CHR bank' if $chr > $self->chr_count - 1 or $chr < 0;
     die 'invalid sprite index' if $offset > 512 or $offset < 0;
