@@ -151,7 +151,7 @@ available:
 
 =item * comments - A set of text comments
 
-=item * tcvi - Television standards compatability information
+=item * tvci - Television standards compatability information
 
 =item * controller - The controllers used by the cartridge
 
