@@ -165,11 +165,11 @@ Returns the number of PRG banks for this ROM.
 
 Returns the number of CHR banks for this ROM.
 
-=head2 sha1()
+=head2 sha1( )
 
 Returns the SHA-1 checksum for the PRG and CHR data.
 
-=head2 crc()
+=head2 crc( )
 
 Returns the CRC checksum for the PRG and CHR data.
 

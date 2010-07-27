@@ -103,6 +103,9 @@ A L<Moose> method which loads the ROM data from a file.
 
 =head1 ATTRIBUTES
 
+Along with the L<base attributes|Games::NES::ROM/BASE ATTRIBUTES>, the following iNES specific attributes are
+available:
+
 =over 4
 
 =item * id - iNES identifier: "NES\x1a"

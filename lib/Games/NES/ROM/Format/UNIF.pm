@@ -110,7 +110,7 @@ __END__
 
 =head1 NAME
 
-Games::NES::ROM::Format::INES - Loads data from a ROM in UNIF format
+Games::NES::ROM::Format::UNIF - Loads data from a ROM in UNIF format
 
 =head1 DESCRIPTION
 
@@ -131,6 +131,33 @@ layed out as follows:
     | Data     |
     +----------+
     etc...
+
+=head1 METHODS
+
+=head2 BUILD( )
+
+A L<Moose> method which loads the ROM data from a file.
+
+=head1 ATTRIBUTES
+
+Along with the L<base attributes|Games::NES::ROM/BASE ATTRIBUTES>, the following UNIF specific attributes are
+available:
+
+=over 4
+
+=item * id - UNIF identifier: "UNIF"
+
+=item * revision - The revision of the UNIF spec for this file
+
+=item * comments - A set of text comments
+
+=item * tcvi - Television standards compatability information
+
+=item * controller - The controllers used by the cartridge
+
+=item * has_vror - The ROM has a VRAM override
+
+=back
 
 =head1 SEE ALSO
 
