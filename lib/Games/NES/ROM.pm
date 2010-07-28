@@ -4,7 +4,7 @@ use Moose;
 use Try::Tiny;
 use FileHandle;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 has 'filename' => ( is => 'rw' );
 
