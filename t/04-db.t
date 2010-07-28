@@ -1,6 +1,7 @@
-use Test::More tests => 3;
-
 use strict;
+use warnings;
+
+use Test::More tests => 3;
 
 BEGIN {
     use_ok( 'Games::NES::ROM::Database' );
@@ -10,19 +11,24 @@ my $db = Games::NES::ROM::Database->new;
 
 isa_ok( $db, 'Games::NES::ROM::Database' );
 
-my $info = $db->get_info_by_crc( '8e2bd25c' );
+my $info = $db->find_by_crc( '8e2bd25c' );
 
 my $expected = {
-    flags => 530,
-    input => 0,
-    prg_skip => 0,
-    mapper => 0,
-    crc => '8e2bd25c',
-    chr_skip => 0,
-    wrk_size => 0,
-    attribute => 0,
-    prg_size => 2,
-    chr_size => 1
+    cartridge => {
+        sha1   => '71FDB80C3583010422652CC5AAE8E2E4131E49F3',
+        dump   => 'bad',
+        system => 'Famicom',
+        crc    => '8E2BD25C',
+        board  => {
+            pad => {
+                h => '1',
+                v => '0'
+            },
+            prg    => { size => '32k' },
+            chr    => { size => '8k' },
+            mapper => '0'
+        }
+    }
 };
 
 is_deeply( $info, $expected );
