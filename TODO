@@ -1,3 +1,0 @@
-+ Make Games::NES::ROM a better abstract class (better fields for both iNES and UNIF formats)
-+ Make the database return a Games::NES::ROM object instead of a hashref
-+ Find a UNIF file and add some tests for that format
