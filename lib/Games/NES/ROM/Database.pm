@@ -63,7 +63,7 @@ Similar to C<find_by_crc>, but uses an SHA-1 hex string.
 sub find_by_sha1 {
     my $self = shift;
     my $sha1 = uc( shift );
-    return XML::Simple::XMLin(
+    return _nodeset_to_hashref(
         $self->xpath->find( "database/game[cartridge[\@sha1='${sha1}']]" ) );
 }
 

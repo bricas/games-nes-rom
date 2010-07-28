@@ -8,7 +8,7 @@ if ( !eval { require XML::XPath; require XML::Simple; } ) {
         'XML::XPath and XML::Simple are required to use the database feature';
 }
 else {
-    plan tests => 3;
+    plan tests => 6;
 }
 
 use_ok( 'Games::NES::ROM::Database' );
@@ -16,8 +16,6 @@ use_ok( 'Games::NES::ROM::Database' );
 my $db = Games::NES::ROM::Database->new;
 
 isa_ok( $db, 'Games::NES::ROM::Database' );
-
-my $info = $db->find_by_crc( '8e2bd25c' );
 
 my $expected = {
     cartridge => {
@@ -37,4 +35,34 @@ my $expected = {
     }
 };
 
-is_deeply( $info, $expected );
+{
+    my $info = $db->find_by_crc( '8e2bd25c' );
+    is_deeply( $info, $expected, 'by CRC' );
+}
+
+{
+    my $info = $db->find_by_sha1( '71fdb80c3583010422652cc5aae8e2e4131e49f3' );
+    is_deeply( $info, $expected, 'by SHA-1' );
+}
+
+{
+    my $rom = MockROM->new;
+    my $info = $db->find_by_rom( $rom );
+    is_deeply( $info, $expected, 'by ROM object' );
+}
+
+{
+    ok( !defined $db->find_by_crc( 'DNE' ), 'entry does not exist' );
+}
+
+package MockROM;
+
+sub new {
+    bless {}, shift;
+}
+
+sub crc {
+    return '8e2bd25c';
+}
+
+1;
