@@ -1,11 +1,10 @@
 Revision history for Perl extension Games::NES::ROM
 
-0.06  XXX
+0.06  Wed Jul 28 2010
     - factored out iNES loading and added UNIF 
       loading
-    - added the ROM database from Nestopia. you can
-      now get the expected header info (plus some
-      extra bits) based on the ROM CRC
+    - added the ROM database from Nestopia
+    - moosified all classes
 
 0.05  Wed Aug 01 2007
     - error handling on file open
