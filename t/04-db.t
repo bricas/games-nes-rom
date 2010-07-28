@@ -1,11 +1,17 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More;
 
-BEGIN {
-    use_ok( 'Games::NES::ROM::Database' );
+if ( !eval { require XML::XPath; require XML::Simple; } ) {
+    plan skip_all =>
+        'XML::XPath and XML::Simple are required to use the database feature';
 }
+else {
+    plan tests => 3;
+}
+
+use_ok( 'Games::NES::ROM::Database' );
 
 my $db = Games::NES::ROM::Database->new;
 
