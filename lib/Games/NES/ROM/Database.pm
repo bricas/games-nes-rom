@@ -8,7 +8,7 @@ Games::NES::ROM::Database - Known info about existing ROMs
 
     use Games::NES::ROM::Database;
     
-    my $db = Games::NES::ROM->new;
+    my $db = Games::NES::ROM::Database->new;
     my $info = $db->find_by_crc( $crc );
 
 =head1 DESCRIPTION
