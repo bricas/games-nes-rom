@@ -15,4 +15,6 @@ requires 'FileHandle';
 
 test_requires 'Test::More';
 
+repository 'http://github.com/bricas/games-nes-rom';
+
 WriteAll;
