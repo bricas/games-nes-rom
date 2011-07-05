@@ -3,9 +3,9 @@ use warnings;
 
 use Test::More;
 
-if ( !eval { require XML::XPath; require XML::Simple; } ) {
+if ( !eval { require XML::XPath; require XML::Simple; XML::Simple->VERSION( '2.18' ) } ) {
     plan skip_all =>
-        'XML::XPath and XML::Simple are required to use the database feature';
+        'XML::XPath and XML::Simple (2.18) are required to use the database feature';
 }
 else {
     plan tests => 6;
