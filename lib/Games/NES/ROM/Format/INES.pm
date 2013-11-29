@@ -42,9 +42,14 @@ sub BUILD {
     }
 
     $self->mapper( $mapper );
-
-    $fh->read( $self->prg_banks->[ scalar @{ $self->prg_banks } ], 16384 ) for 1..$header_vals[ 0 ];
-    $fh->read( $self->chr_banks->[ scalar @{ $self->chr_banks } ], 8192 ) for 1..$header_vals[ 1 ];
+    for( 1..$header_vals[ 0 ] ) {
+        $fh->read( my $bank, 16384 );
+        $self->prg_banks->[ scalar @{ $self->prg_banks } ] = $bank;
+    }
+    for( 1..$header_vals[ 1 ] ) {
+        $fh->read( my $bank, 8192 );
+        $self->chr_banks->[ scalar @{ $self->chr_banks } ] = $bank;
+    }
 
     my $title;
     if( $fh->read( $title, 128 ) == 128 ) {
@@ -130,7 +135,7 @@ Brian Cassidy E<lt>bricas@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2007-2010 by Brian Cassidy
+Copyright 2007-2013 by Brian Cassidy
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
