@@ -10,8 +10,11 @@ name 'Games-NES-ROM';
 all_from 'lib/Games/NES/ROM.pm';
 
 requires 'Moose';
+requires 'Module::Runtime';
 requires 'Try::Tiny';
 requires 'FileHandle';
+requires 'XML::Simple';
+requires 'XML::XPath';
 
 test_requires 'Test::More';
 
