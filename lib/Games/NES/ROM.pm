@@ -1,10 +1,11 @@
 package Games::NES::ROM;
 
 use Moose;
+use Module::Runtime ();
 use Try::Tiny;
 use FileHandle;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 has 'filename' => ( is => 'rw' );
 
@@ -42,7 +43,7 @@ sub load {
 
     for( qw( INES UNIF ) ) {
         my $class = 'Games::NES::ROM::Format::' . $_;
-        Class::MOP::load_class( $class );
+        Module::Runtime::require_module( $class );
 
         my $rom = try {
             $class->new( filename => $file );
@@ -231,7 +232,7 @@ Brian Cassidy E<lt>bricas@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2007-2010 by Brian Cassidy
+Copyright 2007-2013 by Brian Cassidy
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
